@@ -1,6 +1,4 @@
-#
 # @author Milindi Kodikara, RMIT University, 2024
-#
 
 import sys
 import praw
