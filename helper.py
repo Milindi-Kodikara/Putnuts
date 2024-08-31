@@ -71,15 +71,15 @@ def compute_count_sentiment(token_list, positive_words, negative_words):
     return sentiment
 
 
-def print_sentiment(sentiment):
-    print('\n\n------------Count sentiment value------------\n')
+def print_sentiment(sentiment, prefix=''):
+    start = '\n\n------------Count sentiment value------------\n'
+    end = '\n------------------------------------\n\n'
     if sentiment > 0:
-        print(oliver_rgb + str(sentiment), end='')
+        print(oliver_rgb + start + prefix + str(sentiment) + end, end='')
     elif sentiment < 0:
-        print(mabel_rgb + str(sentiment), end='')
+        print(mabel_rgb + start + prefix + str(sentiment) + end, end='')
     else:
-        print(charles_rgb + str(sentiment), end='')
-    print('\n------------------------------------\n\n')
+        print(charles_rgb + start + prefix + str(sentiment) + end, end='')
 
 
 def print_coloured_tokens(method, token_list, sentiment, positive_words=None, negative_words=None):
@@ -98,8 +98,9 @@ def print_coloured_tokens(method, token_list, sentiment, positive_words=None, ne
 
     if method == 'Vader':
         for cat, score in sentiment.items():
-            print(cat)
-            print_sentiment(score)
+            print(*token_list, sep=', ')
+            prefix = '{}: '.format(cat)
+            print_sentiment(score, prefix)
 
 
 def sentiment_analysis(method, omitb_df, b_print):
@@ -125,11 +126,11 @@ def sentiment_analysis(method, omitb_df, b_print):
         # compute sentiment
         if method == 'Vader':
             sentiment = vader_sentiment_analyser.polarity_scores(" ".join(token_list))
-            sentiment_list.append([date, sentiment['compound']])
+            sentiment_list.append([pd.to_datetime(date, unit='s'), sentiment['compound']])
         elif method == 'Count':
             sentiment = compute_count_sentiment(token_list, set_pos_words, set_neg_words)
             # save the date and sentiment of each reddit post
-            sentiment_list.append([date, sentiment])
+            sentiment_list.append([pd.to_datetime(date, unit='s'), sentiment])
 
         if b_print:
             print_coloured_tokens(method, token_list, sentiment, set_pos_words, set_neg_words)
