@@ -3,11 +3,12 @@
 
 from collections import Counter
 import re
+
+import pandas as pd
+from nltk.sentiment import SentimentIntensityAnalyzer
+
 import charts
-import nltk
-
-
-oliver = '#275c4d'
+from utils import *
 
 
 def process(text, tokeniser, stop_words):
@@ -61,3 +62,76 @@ def compute_term_freq(token_list, generate_visual, color=oliver):
                                   '# of words with term frequency')
 
 
+def compute_count_sentiment(token_list, positive_words, negative_words):
+    positive_word_count = len([tok for tok in token_list if tok in positive_words])
+    negative_word_count = len([tok for tok in token_list if tok in negative_words])
+
+    sentiment = positive_word_count - negative_word_count
+
+    return sentiment
+
+
+def print_sentiment(sentiment):
+    print('\n\n------------Count sentiment value------------\n')
+    if sentiment > 0:
+        print(oliver_rgb + str(sentiment), end='')
+    elif sentiment < 0:
+        print(mabel_rgb + str(sentiment), end='')
+    else:
+        print(charles_rgb + str(sentiment), end='')
+    print('\n------------------------------------\n\n')
+
+
+def print_coloured_tokens(method, token_list, sentiment, positive_words=None, negative_words=None):
+    if positive_words is None:
+        positive_words = []
+    if method == 'Count':
+        for token in token_list:
+            if token in positive_words:
+                print(oliver_rgb + token + ', ', end='')
+            elif token in negative_words:
+                print(mabel_rgb + token + ', ', end='')
+            else:
+                print(charles_rgb + token + ', ', end='')
+
+        print_sentiment(sentiment)
+
+    if method == 'Vader':
+        for cat, score in sentiment.items():
+            print(cat)
+            print_sentiment(score)
+
+
+def sentiment_analysis(method, omitb_df, b_print):
+    """
+    @returns: list of reddit posts' sentiments, in the format of [date, sentiment]
+    """
+    set_pos_words = []
+    set_neg_words = []
+    if method == 'Count':
+        # load pos, neg word lists
+        set_pos_words = read_file('positive-words.txt')
+        set_neg_words = read_file('negative-words.txt')
+
+    sentiment_list = []
+    vader_sentiment_analyser = SentimentIntensityAnalyzer()
+
+    for row in omitb_df.itertuples(index=False):
+
+        token_list = row.Processed_tokens
+        date = row.UTC_Date
+        sentiment = 0
+
+        # compute sentiment
+        if method == 'Vader':
+            sentiment = vader_sentiment_analyser.polarity_scores(" ".join(token_list))
+            sentiment_list.append([date, sentiment['compound']])
+        elif method == 'Count':
+            sentiment = compute_count_sentiment(token_list, set_pos_words, set_neg_words)
+            # save the date and sentiment of each reddit post
+            sentiment_list.append([date, sentiment])
+
+        if b_print:
+            print_coloured_tokens(method, token_list, sentiment, set_pos_words, set_neg_words)
+
+    return sentiment_list
