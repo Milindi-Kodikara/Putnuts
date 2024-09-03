@@ -3,6 +3,8 @@
 from collections import Counter
 import pandas as pd
 from nltk.sentiment import SentimentIntensityAnalyzer
+
+import visualiser
 from utils import *
 
 
@@ -88,7 +90,7 @@ def compute_term_freq(token_list, generate_visual, color=oliver):
         y = [count for term, count in term_freq_counter.most_common(term_freq)]
         x = [term for term, count in term_freq_counter.most_common(term_freq)]
 
-        charts.generate_bar_chart(x, y, color, "Term frequency distribution", 'Term frequency',
+        visualiser.generate_bar_chart(x, y, color, "Term frequency distribution", 'Term frequency',
                                   '# of words with term frequency')
 
 
