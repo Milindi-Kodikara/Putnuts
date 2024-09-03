@@ -1,50 +1,76 @@
 # File containing helper functions for sentiment analysis
 # @author Milindi Kodikara, RMIT University, 2024
-import math
 from collections import Counter
-import re
-
-import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 from nltk.sentiment import SentimentIntensityAnalyzer
-from wordcloud import WordCloud
-
-import charts
 from utils import *
 
 
-def process(text, tokeniser, stop_words):
+def process(text, tokeniser, stemmer, stop_words, print_processing=False):
     """
         Perform the processing
         @param text: the text (reddit post) to process
 
         @returns: list of (valid) tokens in text
     """
+    start = '\n\n------------------------------------\n'
+    end = '\n------------------------------------\n\n'
+    if print_processing:
+        print(charles_rgb + f'{start}Initial text\n{text}\n{end}')
+
     # conversion to lowercase
     text = text.lower()
+    if print_processing:
+        print(mabel_rgb + f'{start}Lowercase text{start}{text}\n{end}', end='')
+
+    # remove curly inverted commas
     text = re.sub(u"(\u2018|\u2019|\u2014|\u201C|\u201D)", "", text)
+
+    if print_processing:
+        print(mabel_rgb + f'{start}Inverted comma removed text{start}{text}\n{end}', end='')
+
+    # remove emojis
+    text = re.sub(regex_emojis, '', text)
+    if print_processing:
+        print(mabel_rgb + f'{start}Emoji removed text{start}{text}\n{end}', end='')
+
+    # remove username tags, mentions, and links
+    text = re.sub(r'(r/|@|https?)\S+|#', '', text)
+    if print_processing:
+        print(mabel_rgb + f'{start}Tags, mentions and links removed text{start}{text}\n{end}', end='')
 
     # tokenizer
     tokens = tokeniser.tokenize(text)
 
+    if print_processing:
+        print(mabel_rgb + f'{start}Tokenized text{start}{tokens}\n{end}', end='')
+
     # strip whitespace
-    tokens_stripped = [tok.strip() for tok in tokens]
+    tokens = [tok.strip() for tok in tokens]
 
-    # TODO: Remove abbreviations and replace acronyms with natural language words
-    # TODO: Remove emojis
-    # TODO: Remove user name tags and mentions
-    # TODO: Maybe stemmer
+    if print_processing:
+        print(mabel_rgb + f'{start}Whitespace stripped tokenized text{start}{tokens}\n{end}', end='')
 
-    # regex pattern for digits
-    # Note: the list comprehension in return statement essentially remove all strings of digits or fractions, e.g., 6.15
-    regex_digit = re.compile("^\d+\s|\s\d+\s|\s\d+|\d+$")
-    # regex pattern to remove http
-    regex_http = re.compile("^http")
+    # remove duplicates, TODO: Check if I should use stemmer
+    # tokens = set([stemmer.stem(tok) for tok in tokens])
 
-    # remove stop words, http, remove digits (with decimals and fractions)
-    return [tok for tok in tokens_stripped if
-            tok not in stop_words and regex_digit.match(tok) is None and regex_http.match(tok) is None]
+    # TODO: Remove abbreviations and replace acronyms with natural language words -- maybe
+
+    # remove digits
+    tokens = [tok for tok in tokens if not tok.isdigit()]
+    if print_processing:
+        print(mabel_rgb + f'{start}Digits removed tokenized text{start}{tokens}\n{end}', end='')
+
+    # remove stop words
+    tokens = [tok for tok in tokens if tok not in stop_words]
+
+    if print_processing:
+        print(mabel_rgb + f'{start}Stop words removed tokenized text{start}{tokens}\n{end}', end='')
+
+    if print_processing:
+        print(oliver_rgb + f'{start}Final tokenized text{start}{tokens}\n{end}', end='')
+
+    return tokens
 
 
 def compute_term_freq(token_list, generate_visual, color=oliver):
@@ -140,49 +166,3 @@ def sentiment_analysis(method, omitb_df, b_print):
             print_coloured_tokens(method, token_list, sentiment, set_pos_words, set_neg_words)
 
     return sentiment_list
-
-
-# TODO: Move to visualization.py file
-def display_topics(model, feature_names, num_top_words):
-    """
-    Prints out the most associated words for each feature.
-
-    @param model: lda model
-    @param feature_names: list of strings, representing the list of features/words.
-    @param num_top_words: number of words to print per topic.
-    """
-
-    # print out the topic distributions
-    for topic_id, topic_distribution_list in enumerate(model.components_):
-        print("Topic %d:" % (topic_id))
-        print(" ".join([feature_names[i] for i in topic_distribution_list.argsort()[:-num_top_words - 1:-1]]))
-
-
-def display_word_cloud(model, feature_names):
-    """
-    Displays the word cloud of the topic distributions, stored in model.
-
-    @param model: lda model.
-    @param feature_names: list of strings, representing the list of features/words.
-    """
-
-    # this normalises each row/topic to sum to one
-    # use this normalised_components to display your wordclouds
-    normalised_components = model.components_ / model.components_.sum(axis=1)[:, np.newaxis]
-
-    topic_num = len(model.components_)
-    # number of wordclouds for each row
-    plot_col_num = 3
-    # number of wordclouds for each column
-    plot_row_num = int(math.ceil(topic_num / plot_col_num))
-
-    for topicId, lTopicDist in enumerate(normalised_components):
-        l_word_prob = {feature_names[i]: wordProb for i, wordProb in enumerate(lTopicDist)}
-        wordcloud = WordCloud(background_color='black')
-        wordcloud.fit_words(frequencies=l_word_prob)
-        plt.subplot(plot_row_num, plot_col_num, topicId + 1)
-        plt.title('Topic %d:' % (topicId + 1))
-        plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
-
-    plt.show(block=True)
