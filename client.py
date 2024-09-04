@@ -1,5 +1,5 @@
+# File loading reddit client for sentiment analysis
 # @author Milindi Kodikara, RMIT University, 2024
-
 import sys
 import praw
 import os
@@ -11,9 +11,9 @@ load_dotenv()
 def client():
     """
         Setup Reedit API authentication.
+
         @returns: praw Reddit object
     """
-
     try:
         clientId = os.environ["CLIENT-ID"]
         clientSecret = os.environ["CLIENT-SECRET"]

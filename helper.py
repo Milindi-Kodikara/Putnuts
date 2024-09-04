@@ -1,4 +1,4 @@
-# File containing helper functions for sentiment analysis
+# File containing helper functions
 # @author Milindi Kodikara, RMIT University, 2024
 from collections import Counter
 import pandas as pd
@@ -10,10 +10,14 @@ from utils import *
 
 def process(text, tokeniser, stemmer, stop_words, print_processing=False):
     """
-        Perform the processing
-        @param text: the text (reddit post) to process
+        Perform the processing of the reddit posts
+        @param text: the text (reddit post/comment) to process
+        @param tokeniser
+        @param stemmer
+        @param stop_words: list of stop words to remove from text
+        @param print_processing: Bool to determine whether to print out the cleaned token list at each step
 
-        @returns: list of (valid) tokens in text
+        @returns: list of (valid) tokens
     """
     start = '\n\n------------------------------------\n'
     end = '\n------------------------------------\n\n'
@@ -74,6 +78,14 @@ def process(text, tokeniser, stemmer, stop_words, print_processing=False):
 
 
 def compute_term_freq(token_list, generate_visual, color=oliver):
+    """
+        Calculate the term frequency of the corpus
+        @param token_list: list of processed tokens
+        @param generate_visual: Bool to determine if the visual should be created
+        @param color: bar colour of the bars of the bar graph
+
+        Generates a visual representation (bar graph) of the term frequency
+    """
     term_freq = 50
     term_freq_counter = Counter()
 
@@ -89,10 +101,20 @@ def compute_term_freq(token_list, generate_visual, color=oliver):
         x = [term for term, count in term_freq_counter.most_common(term_freq)]
 
         visualiser.generate_bar_chart(x, y, color, "Term frequency distribution", 'Term frequency',
-                                  '# of words with term frequency')
+                                      'Number of words with term frequency')
 
 
 def compute_count_sentiment(token_list, positive_words, negative_words):
+    """
+        Basic sentiment analysis by counting the number of positive words, counting the negative words.
+        The overall polarity is the difference in the two numbers.
+
+        @param token_list: token list from a post + associated comments
+        @param positive_words: set of positive sentiment words
+        @param negative_words: set of negative sentiment words
+
+        @returns: Difference of the positive and negative word count
+    """
     positive_word_count = len([tok for tok in token_list if tok in positive_words])
     negative_word_count = len([tok for tok in token_list if tok in negative_words])
 
@@ -102,6 +124,12 @@ def compute_count_sentiment(token_list, positive_words, negative_words):
 
 
 def print_sentiment(sentiment, prefix=''):
+    """
+        Formatted print of the sentiment value
+
+        @param sentiment: sentiment value
+        @param prefix: 'pos', 'neg', 'neu' or 'compound' for Vader sentiment analysis
+    """
     start = '\n\n------------Count sentiment value------------\n'
     end = '\n------------------------------------\n\n'
     if sentiment > 0:
@@ -113,6 +141,15 @@ def print_sentiment(sentiment, prefix=''):
 
 
 def print_coloured_tokens(method, token_list, sentiment, positive_words=None, negative_words=None):
+    """
+        Formatted print of the tokens based on the sentiment value and colored tokens for count sentiment analysis
+
+        @param method: Sentiment analysis method i.e 'Count' or 'Vader'
+        @param token_list: list of tokens extracted from the post + associated comments
+        @param sentiment: sentiment value for the post + associated comments based on the tokens
+        @param positive_words: set of positive sentiment words
+        @param negative_words: set of negative sentiment words
+    """
     if positive_words is None:
         positive_words = []
     if method == 'Count':
@@ -135,6 +172,16 @@ def print_coloured_tokens(method, token_list, sentiment, positive_words=None, ne
 
 def sentiment_analysis(method, omitb_df):
     """
+    Analysing the sentiment of the reddit posts and comments via the methods 'Count' and 'Vader'.
+
+    Count sentiment analysis -> Basic sentiment analysis by counting the number of positive words,
+    counting the negative words. The overall polarity is the difference in the two numbers.
+
+    Vader sentiment analysis -> Using Vader lexicons for sentiment analysis instead of
+    raw positive and negative word counts.
+
+    @param method: 'Vader' or 'Count'
+
     @returns: list of reddit posts' sentiments, in the format of [date, sentiment]
     """
     set_pos_words = []
