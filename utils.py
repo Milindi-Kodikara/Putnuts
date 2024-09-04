@@ -1,7 +1,19 @@
+# File containing utility functions
+# @author Milindi Kodikara, RMIT University, 2024
 import re
 
 
 def get_color_escape(r, g, b, background=False):
+    """
+        Combine the r,g,b colour values into the desired format for coloured terminal prints
+
+        @param r: the red colour value
+        @param g: the green colour value
+        @param b: the blue colour value
+        @param background: if the colour is for the background or font colour
+
+        @return: formatted colour string
+    """
     return '\033[{};2;{};{};{}m'.format(48 if background else 38, r, g, b)
 
 
@@ -14,6 +26,13 @@ RESET = '\033[0m'
 
 
 def read_file(filename):
+    """
+        Read a file
+
+        @param filename: name of the file to read
+
+        @return: a unique list of words
+    """
     item_list = []
     with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
         for line in file:
@@ -21,6 +40,7 @@ def read_file(filename):
 
     return set(item_list)
 
+# The following regex has been created with the help of:
 # https://stackoverflow.com/questions/73804264/removing-emojis-and-special-characters-in-python
 
 
