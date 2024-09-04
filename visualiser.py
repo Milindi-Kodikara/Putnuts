@@ -1,8 +1,14 @@
+import math
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
+from wordcloud import WordCloud
 
-plt.rcParams["figure.figsize"] = (40, 24)  # default plot size
+plt.rcParams["figure.figsize"] = (10, 8)
+plt.rcParams["figure.autolayout"] = True
+
 sns.set(style='whitegrid', palette='Dark2')
 
 
@@ -11,7 +17,6 @@ def generic_chart(title, x_label, y_label):
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.xticks(rotation=90)
-    plt.tight_layout()
     plt.show()
 
 
@@ -25,15 +30,16 @@ def generate_scatter_plot(x, y, color, title, x_label, y_label):
     generic_chart(title, x_label, y_label)
 
 
-# TODO: Fix index issue here
-def generate_time_series(item_list):
-    series = pd.DataFrame(item_list, columns=['date', 'sentiment'])
-    series.set_index('date', inplace=True)
-    series[['sentiment']] = series[['sentiment']].apply(pd.to_numeric)
-    # TODO: play with this for different resolution, '1H' is by hour, '1M' is by minute etc
+def generate_time_series(item_list, title, x_column, y_column, x_label, y_label, color):
+    series = pd.DataFrame(item_list, columns=[x_column, y_column])
+    series.set_index(x_column, inplace=True)
+    series[[y_column]] = series[[y_column]].apply(pd.to_numeric)
     new_series = series.resample('1D').sum()
     # this plots and shows the time series
-    new_series.plot()
+    new_series.plot(color=color)
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.show()
 
 
@@ -80,3 +86,19 @@ def display_word_cloud(model, feature_names):
         plt.axis("off")
 
     plt.show(block=True)
+
+
+def display_time_series_stats(series, function, title, x_label, y_label, color):
+    ordered = series.reset_index(name=function).sort_values([function], ascending=False)
+    print(f'{title} ordered:\n{ordered.head()}')
+
+    df = pd.DataFrame(columns=['Date', 'Values'])
+    df['Date'] = series.index
+    df['Values'] = series.to_list()
+
+    x_column = 'Date'
+    y_column = 'Values'
+
+    combined_list = [[row.Date, row.Values] for row in df.itertuples()]
+
+    generate_time_series(combined_list, title, x_column, y_column, x_label, y_label, color)
