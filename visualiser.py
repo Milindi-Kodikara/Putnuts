@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 from wordcloud import WordCloud
 
-plt.rcParams["figure.figsize"] = (10, 8)
+plt.rcParams["figure.figsize"] = (12, 8)
 plt.rcParams["figure.autolayout"] = True
 
 sns.set(style='whitegrid', palette='Dark2')

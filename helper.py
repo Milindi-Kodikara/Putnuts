@@ -56,8 +56,6 @@ def process(text, tokeniser, stemmer, stop_words, print_processing=False):
     # remove duplicates, TODO: Check if I should use stemmer
     # tokens = set([stemmer.stem(tok) for tok in tokens])
 
-    # TODO: Remove abbreviations and replace acronyms with natural language words -- maybe
-
     # remove digits
     tokens = [tok for tok in tokens if not tok.isdigit()]
     if print_processing:
@@ -135,7 +133,7 @@ def print_coloured_tokens(method, token_list, sentiment, positive_words=None, ne
             print_sentiment(score, prefix)
 
 
-def sentiment_analysis(method, omitb_df, b_print):
+def sentiment_analysis(method, omitb_df):
     """
     @returns: list of reddit posts' sentiments, in the format of [date, sentiment]
     """
@@ -149,7 +147,8 @@ def sentiment_analysis(method, omitb_df, b_print):
     sentiment_list = []
     vader_sentiment_analyser = SentimentIntensityAnalyzer()
 
-    for row in omitb_df.itertuples(index=False):
+    for row in omitb_df.itertuples(index=True):
+        print_processing = True if row[0] <= 10 else False
 
         token_list = row.Processed_tokens
         date = row.UTC_Date
@@ -164,7 +163,17 @@ def sentiment_analysis(method, omitb_df, b_print):
             # save the date and sentiment of each reddit post
             sentiment_list.append([pd.to_datetime(date, unit='s'), sentiment])
 
-        if b_print:
+        if print_processing:
+            post = row.Post
+            num_comments = row.Num_comments
+            date = row.Date
+
+            start = '\n\n------------Analysing sentiment------------\n'
+            end = '\n------------------------------------\n\n'
+            formatted_post = f'Date: {date}\n\nPost:\n{post}\n\nNum Comments: {num_comments}'
+
+            print(charles_rgb + start + formatted_post + end, end='')
+
             print_coloured_tokens(method, token_list, sentiment, set_pos_words, set_neg_words)
 
     return sentiment_list
