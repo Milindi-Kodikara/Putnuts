@@ -57,9 +57,6 @@ def process(text, tokeniser, stemmer, stop_words, print_processing=False):
     if print_processing:
         print(mabel_rgb + f'{start}Whitespace stripped tokenized text{start}{tokens}\n{end}', end='')
 
-    # remove duplicates, TODO: Check if I should use stemmer
-    # tokens = set([stemmer.stem(tok) for tok in tokens])
-
     # remove digits
     tokens = [tok for tok in tokens if not tok.isdigit()]
     if print_processing:
@@ -195,7 +192,7 @@ def sentiment_analysis(method, omitb_df):
     vader_sentiment_analyser = SentimentIntensityAnalyzer()
 
     for row in omitb_df.itertuples(index=True):
-        print_processing = True if row[0] <= 10 else False
+        print_processing = True if row[0] <= 1 else False
 
         token_list = row.Processed_tokens
         date = row.UTC_Date
