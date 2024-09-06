@@ -18,7 +18,7 @@ def client():
         clientId = os.environ["CLIENT-ID"]
         clientSecret = os.environ["CLIENT-SECRET"]
         password = os.environ["PASSWORD"]
-        userName = os.environ["USERNAME"]
+        userName = os.environ["REDDIT-USERNAME"]
         userAgents = os.environ["USER-AGENTS"]
 
         reddit_client = praw.Reddit(client_id=clientId,
