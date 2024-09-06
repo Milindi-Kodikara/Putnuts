@@ -14,8 +14,8 @@ season 4 renewal announcement to one week after the season 4 premier.
 2. [Register an app](https://www.reddit.com/prefs/apps)
 3. rename `.env_template` to `.env`
 4. Fill out the `.env` file params
-5. Set up [PRAW](https://praw.readthedocs.io/en/stable/index.html)
-6. Install all the required libraries stated at the start of the files
+5. Go over [PRAW](https://praw.readthedocs.io/en/stable/index.html)
+6. Install all the required libraries by `pip install -r requirements.txt`
 
 ### Run
 Run the jupyter notebook via the terminal or an editor
